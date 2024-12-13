@@ -1,2 +1,2 @@
-# Active-filter-calculator
+# Analog filter calculator
 Analogic filter calculator
