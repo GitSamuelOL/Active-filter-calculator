@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cálculo de Filtros</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            font-weight: bold;
+        }
+        input[type="number"], select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 1.2em;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Cálculadora de filtros analógicos</h1>
+
+    <label for="filterComponent">Componentes do filtro:</label>
+    <select id="filterComponent" onchange="updateFilterOptions()">
+        <option value="">Selecione...</option>
+        <option value="active">Ativo</option>
+        <option value="passive">Passivo</option>
+    </select>
+
+    <div id="activeFilterOptions" style="display:none;">
+        <label for="filterTypeActive">Tipo de filtro ativo:</label>
+        <select id="filterTypeActive" onchange="updatePolesOptions()">
+            <option value="">Selecione...</option>
+            <option value="lowpass">Passa-baixa</option>
+            <option value="highpass">Passa-alta</option>
+        </select>
+
+        <label for="poles">Número de Polos:</label>
+        <select id="poles" onchange="displayInputsForActiveFilter()">
+            <option value="">Selecione...</option>
+            <option value="2">2 Polos</option>
+            <option value="3">3 Polos</option>
+        </select>
+    </div>
+
+    <div id="passiveFilterOptions" style="display:none;">
+        <label for="filterTypePassive">Tipo de filtro passivo:</label>
+        <select id="filterTypePassive" onchange="displayInputsForPassiveFilter()">
+            <option value="">Selecione...</option>
+            <option value="lowpass">Passa-baixa</option>
+            <option value="highpass">Passa-alta</option>
+        </select>
+    </div>
+
+    <!-- Inputs Dinâmicos -->
+    <div id="dynamicInputs"></div>
+
+    <button onclick="calculateFc()">Calcular Frequência de Corte</button>
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+    function updateFilterOptions() {
+        let component = document.getElementById('filterComponent').value;
+        document.getElementById('activeFilterOptions').style.display = component === 'active' ? 'block' : 'none';
+        document.getElementById('passiveFilterOptions').style.display = component === 'passive' ? 'block' : 'none';
+        document.getElementById('dynamicInputs').innerHTML = '';
+        document.getElementById('result').innerHTML = '';
+    }
+
+    function updatePolesOptions() {
+        document.getElementById('poles').style.display = 'block';
+        document.getElementById('dynamicInputs').innerHTML = '';
+        document.getElementById('result').innerHTML = '';
+    }
+
+    function displayInputsForActiveFilter() {
+        let poles = document.getElementById('poles').value;
+        let filterType = document.getElementById('filterTypeActive').value;
+        let html = '';
+
+        if (filterType === 'lowpass') {
+            if (poles === '2') {
+                html += `
+                    <label for="C1">Capacitor 1 (C1) em farads:</label>
+                    <input type="number" id="C1" step="any" required>
+                    <label for="C2">Capacitor 2 (C2) em farads:</label>
+                    <input type="number" id="C2" step="any" required>
+                    <label for="R1">Resistência (R1) em ohms:</label>
+                    <input type="number" id="R1" required>
+                `;
+            } else if (poles === '3') {
+                html += `
+                    <label for="C1">Capacitor 1 (C1) em farads:</label>
+                    <input type="number" id="C1" step="any" required>
+                    <label for="C2">Capacitor 2 (C2) em farads:</label>
+                    <input type="number" id="C2" step="any" required>
+                    <label for="C3">Capacitor 3 (C3) em farads:</label>
+                    <input type="number" id="C3" step="any" required>
+                    <label for="R1">Resistência (R1) em ohms:</label>
+                    <input type="number" id="R1" required>
+                `;
+            }
+        } else if (filterType === 'highpass') {
+            if (poles === '2') {
+                html += `
+                    <label for="C1">Capacitor (C1) em farads:</label>
+                    <input type="number" id="C1" step="any" required>
+                    <label for="R1">Resistência 1 (R1) em ohms:</label>
+                    <input type="number" id="R1" required>
+                    <label for="R2">Resistência 2 (R2) em ohms:</label>
+                    <input type="number" id="R2" required>
+                `;
+            } else if (poles === '3') {
+                html += `
+                    <label for="C1">Capacitor (C1) em farads:</label>
+                    <input type="number" id="C1" step="any" required>
+                    <label for="R1">Resistência 1 (R1) em ohms:</label>
+                    <input type="number" id="R1" required>
+                    <label for="R2">Resistência 2 (R2) em ohms:</label>
+                    <input type="number" id="R2" required>
+                    <label for="R3">Resistência 3 (R3) em ohms:</label>
+                    <input type="number" id="R3" required>
+                `;
+            }
+        }
+        document.getElementById('dynamicInputs').innerHTML = html;
+    }
+
+    function displayInputsForPassiveFilter() {
+        let filterType = document.getElementById('filterTypePassive').value;
+        let html = '';
+
+        if (filterType === 'lowpass') {
+            html += `
+                <label for="C1">Capacitor (C1) em farads:</label>
+                <input type="number" id="C1" step="any" required>
+                <label for="R1">Resistência (R1) em ohms:</label>
+                <input type="number" id="R1" required>
+            `;
+        } else if (filterType === 'highpass') {
+            html += `
+                <label for="R1">Resistência (R1) em ohms:</label>
+                <input type="number" id="R1" required>
+                <label for="C1">Capacitor (C1) em farads:</label>
+                <input type="number" id="C1" step="any" required>
+            `;
+        }
+        document.getElementById('dynamicInputs').innerHTML = html;
+    }
+
+    function calculateFc() {
+        let filterComponent = document.getElementById('filterComponent').value;
+        let fc = 0;
+
+        if (filterComponent === 'active') {
+            let filterType = document.getElementById('filterTypeActive').value;
+            let poles = document.getElementById('poles').value;
+
+            if (filterType === 'lowpass') {
+                let C1 = parseFloat(document.getElementById('C1').value);
+                let R1 = parseFloat(document.getElementById('R1').value);
+
+                if (poles === '2') {
+                    let C2 = parseFloat(document.getElementById('C2').value);
+                    let Fc1 = 1.414 / (2 * Math.PI * C1 * R1);
+                    let Fc2 = 0.707 / (2 * Math.PI * C2 * R1);
+                    fc = (Fc1 + Fc2) / 2;
+                } else if (poles === '3') {
+                    let C2 = parseFloat(document.getElementById('C2').value);
+                    let C3 = parseFloat(document.getElementById('C3').value);
+                    let Fc1 = 3.546 / (2 * Math.PI * C1 * R1);
+                    let Fc2 = 1.392 / (2 * Math.PI * C2 * R1);
+                    let Fc3 = 0.202 / (2 * Math.PI * C3 * R1);
+                    fc = (Fc1 + Fc2 + Fc3) / 3;
+                }
+            } else if (filterType === 'highpass') {
+                let C1 = parseFloat(document.getElementById('C1').value);
+
+                if (poles === '2') {
+                    let R1 = parseFloat(document.getElementById('R1').value);
+                    let R2 = parseFloat(document.getElementById('R2').value);
+                    let Fc1 = 1.414 / (2 * Math.PI * C1 * R1);
+                    let Fc2 = 0.707 / (2 * Math.PI * C1 * R2);
+                    fc = (Fc1 + Fc2) / 2;
+                } else if (poles === '3') {
+                    let R1 = parseFloat(document.getElementById('R1').value);
+                    let R2 = parseFloat(document.getElementById('R2').value);
+                    let R3 = parseFloat(document.getElementById('R3').value);
+                    let Fc1 = 3.546 / (2 * Math.PI * C1 * R1);
+                    let Fc2 = 1.392 / (2 * Math.PI * C1 * R2);
+                    let Fc3 = 0.202 / (2 * Math.PI * C1 * R3);
+                    fc = (Fc1 + Fc2 + Fc3) / 3;
+                }
+            }
+        } else if (filterComponent === 'passive') {
+            let filterType = document.getElementById('filterTypePassive').value;
+            let C1 = parseFloat(document.getElementById('C1').value);
+            let R1 = parseFloat(document.getElementById('R1').value);
+
+            if (filterType === 'lowpass') {
+                fc = 1 / (2 * Math.PI * C1 * R1);
+            } else if (filterType === 'highpass') {
+                fc = 1 / (2 * Math.PI * R1 * C1);
+            }
+        }
+
+        document.getElementById('result').innerHTML = `Frequência de Corte (Fc): ${fc.toFixed(2)} Hz`;
+    }
+</script>
+
+</body>
+</html>
